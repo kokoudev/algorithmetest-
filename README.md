@@ -114,19 +114,7 @@ Bienvenue dans ce projet de visualisation interactive de **3 algorithmes fondame
 
 ---
 
-## 📋 Configuration pour le CV
 
-### Ajouter le lien à votre CV
-Quand votre projet est déployé, voici le lien à ajouter :
-
-```
-Visualiseur d'Algorithmes
-https://votre-projet.railway.app
-- Développement d'une interface web interactive pour visualiser 3 algorithmes fondamentaux
-- Backend Python avec Flask, calculs optimisés
-- Frontend moderne avec HTML/CSS/JavaScript
-- QuickSort (3 stratégies de pivot), Two Sum (recherche binaire), Karatsuba (multiplication rapide)
-```
 
 ### Dans un portefeuille/GitHub
 Ajoutez dans votre `README` principal :
