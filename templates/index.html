@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualiseur d'Algorithmes Fondamentaux</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <!-- CSS stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="app-background">
+        <div class="glow-sphere sphere-1"></div>
+        <div class="glow-sphere sphere-2"></div>
+    </div>
+
+    <div class="dashboard-container">
+        <!-- HEADER -->
+        <header class="app-header">
+            <div class="header-main">
+                <div class="logo-area">
+                    <span class="logo-icon">⚡</span>
+                    <h1>AlgoVisualizer</h1>
+                </div>
+                <div class="status-badge" id="api-status">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Connexion API...</span>
+                </div>
+            </div>
+            <p class="tagline">Explorez et analysez des algorithmes fondamentaux avec des calculs optimisés en temps réel.</p>
+        </header>
+
+        <!-- DASHBOARD BODY -->
+        <main class="dashboard-body">
+            <!-- SIDE NAVIGATION -->
+            <aside class="sidebar">
+                <nav class="nav-menu">
+                    <button class="nav-item active" data-tab="quicksort" onclick="switchTab('quicksort')">
+                        <span class="nav-icon">🔄</span>
+                        <div class="nav-label">
+                            <h3>QuickSort</h3>
+                            <p>Tri diviser pour régner</p>
+                        </div>
+                    </button>
+                    <button class="nav-item" data-tab="two-sum" onclick="switchTab('two-sum')">
+                        <span class="nav-icon">🎯</span>
+                        <div class="nav-label">
+                            <h3>Two Sum</h3>
+                            <p>Recherche de paires</p>
+                        </div>
+                    </button>
+                    <button class="nav-item" data-tab="karatsuba" onclick="switchTab('karatsuba')">
+                        <span class="nav-icon">✖️</span>
+                        <div class="nav-label">
+                            <h3>Karatsuba</h3>
+                            <p>Multiplication rapide</p>
+                        </div>
+                    </button>
+                </nav>
+            </aside>
+
+            <!-- CONTENT AREA -->
+            <section class="content-panel">
+                <!-- QUICKSORT TAB -->
+                <div id="quicksort" class="tab-pane active">
+                    <div class="panel-header">
+                        <h2>Tri Rapide (QuickSort)</h2>
+                        <span class="complexity-badge">O(n log n)</span>
+                    </div>
+                    <p class="panel-desc">
+                        L'algorithme trie un tableau en sélectionnant un élément comme pivot et en partitionnant les autres éléments autour de lui.
+                    </p>
+
+                    <div class="control-card">
+                        <div class="form-row">
+                            <div class="form-group flex-2">
+                                <label for="qs-input">Tableau de nombres (séparés par des espaces)</label>
+                                <input type="text" id="qs-input" placeholder="ex: 12 3 5 45 19 8 26 50" value="12 3 5 45 19 8 26 50">
+                            </div>
+                            <div class="form-group flex-1">
+                                <label for="qs-strat">Choix du Pivot</label>
+                                <select id="qs-strat">
+                                    <option value="1">Premier élément</option>
+                                    <option value="2">Dernier élément</option>
+                                    <option value="3">Médiane des trois</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="action-bar">
+                            <div class="presets">
+                                <button class="btn btn-outline" onclick="generateRandomArray('qs-input', 12, 1, 99)">🎲 Aléatoire</button>
+                                <button class="btn btn-outline" onclick="generateSortedArray('qs-input', 12)">📈 Déjà trié</button>
+                                <button class="btn btn-outline" onclick="generateReversedArray('qs-input', 12)">📉 Inversé (Pire cas)</button>
+                            </div>
+                            <button class="btn btn-primary" onclick="runQuickSort()">
+                                <span>Exécuter QuickSort</span>
+                                <span class="btn-glow"></span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- LOADING STATE -->
+                    <div id="qs-loading" class="loader-overlay" style="display: none;">
+                        <div class="spinner"></div>
+                        <p>Tri en cours sur le serveur...</p>
+                    </div>
+
+                    <!-- RESULT -->
+                    <div id="qs-result" class="result-card" style="display: none;">
+                        <div class="result-header">
+                            <h3>📊 Analyse du Tri</h3>
+                            <div class="result-badges">
+                                <div class="badge-item">
+                                    <span class="b-label">Comparaisons</span>
+                                    <span class="b-val" id="qs-stat-comps">-</span>
+                                </div>
+                                <div class="badge-item">
+                                    <span class="b-label">Stratégie</span>
+                                    <span class="b-val" id="qs-stat-strat">-</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="visualization-area">
+                            <h4>Visualisation Graphique</h4>
+                            <div class="bar-chart-container" id="qs-chart"></div>
+                        </div>
+
+                        <div class="result-details">
+                            <div class="detail-row">
+                                <strong>Tableau d'entrée :</strong>
+                                <code id="qs-orig-val"></code>
+                            </div>
+                            <div class="detail-row">
+                                <strong>Tableau trié :</strong>
+                                <code class="success-code" id="qs-sorted-val"></code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TWO SUM TAB -->
+                <div id="two-sum" class="tab-pane">
+                    <div class="panel-header">
+                        <h2>Recherche de Paires (Two Sum)</h2>
+                        <span class="complexity-badge">O(n log n)</span>
+                    </div>
+                    <p class="panel-desc">
+                        Identifie toutes les valeurs de cibles de somme distinctes dans l'intervalle <code>[-10000, 10000]</code> qui peuvent être formées en additionnant deux nombres distincts de la liste d'entrée.
+                    </p>
+
+                    <div class="control-card">
+                        <div class="form-group">
+                            <label for="ts-input">Liste de nombres (séparés par des espaces)</label>
+                            <textarea id="ts-input" rows="3" placeholder="ex: 2 3 -10 5000 -4998 10005 5 15 -14">2 3 -10 5000 -4998 10005 5 15 -14</textarea>
+                        </div>
+
+                        <div class="action-bar">
+                            <div class="presets">
+                                <button class="btn btn-outline" onclick="generateRandomTwoSum('ts-input', 40)">🎲 Aléatoire (Grand)</button>
+                                <button class="btn btn-outline" onclick="generateTwoSumMatching('ts-input')">🎯 Paires cibles garanties</button>
+                                <button class="btn btn-outline" onclick="clearInput('ts-input')">🧹 Effacer</button>
+                            </div>
+                            <button class="btn btn-primary" onclick="runTwoSum()">
+                                <span>Exécuter Two Sum</span>
+                                <span class="btn-glow"></span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- LOADING -->
+                    <div id="ts-loading" class="loader-overlay" style="display: none;">
+                        <div class="spinner"></div>
+                        <p>Recherche des paires...</p>
+                    </div>
+
+                    <!-- RESULT -->
+                    <div id="ts-result" class="result-card" style="display: none;">
+                        <div class="result-header">
+                            <h3>📊 Sommes Cibles Trouvées</h3>
+                            <div class="badge-item">
+                                <span class="b-label">Sommes uniques</span>
+                                <span class="b-val" id="ts-stat-count">-</span>
+                            </div>
+                        </div>
+
+                        <div class="filter-search-box">
+                            <input type="text" id="ts-search" placeholder="Filtrer ou rechercher une somme..." oninput="filterSums()">
+                        </div>
+
+                        <div class="sums-grid-container">
+                            <div class="sums-grid" id="ts-sums-list"></div>
+                            <p class="sums-note" id="ts-limit-note">Affichage des 100 premières sommes distinctes.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KARATSUBA TAB -->
+                <div id="karatsuba" class="tab-pane">
+                    <div class="panel-header">
+                        <h2>Multiplication de Karatsuba</h2>
+                        <span class="complexity-badge">O(n<sup>1.585</sup>)</span>
+                    </div>
+                    <p class="panel-desc">
+                        Multiplication optimisée utilisant le principe "Diviser pour régner". Réduit la multiplication de deux nombres de longueur $n$ de 4 à seulement 3 sous-multiplications récursives.
+                    </p>
+
+                    <div class="control-card">
+                        <div class="form-row">
+                            <div class="form-group flex-1">
+                                <label for="ka-input-a">Premier nombre (A)</label>
+                                <input type="number" id="ka-input-a" min="0" placeholder="ex: 12345" value="12345">
+                            </div>
+                            <div class="form-group flex-1">
+                                <label for="ka-input-b">Second nombre (B)</label>
+                                <input type="number" id="ka-input-b" min="0" placeholder="ex: 6789" value="6789">
+                            </div>
+                        </div>
+
+                        <div class="action-bar">
+                            <div class="presets">
+                                <button class="btn btn-outline" onclick="generateBigNumbers(6)">🎲 6 Chiffres</button>
+                                <button class="btn btn-outline" onclick="generateBigNumbers(12)">🚀 12 Chiffres</button>
+                                <button class="btn btn-outline" onclick="generateBigNumbers(18)">🌀 18 Chiffres (Très grand)</button>
+                            </div>
+                            <button class="btn btn-primary" onclick="runKaratsuba()">
+                                <span>Calculer le Produit</span>
+                                <span class="btn-glow"></span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- LOADING -->
+                    <div id="ka-loading" class="loader-overlay" style="display: none;">
+                        <div class="spinner"></div>
+                        <p>Calcul récursif en cours...</p>
+                    </div>
+
+                    <!-- RESULT -->
+                    <div id="ka-result" class="result-card" style="display: none;">
+                        <div class="result-header">
+                            <h3>📊 Détails du Calcul</h3>
+                            <span class="verification-badge" id="ka-match-badge">Vérifié ✅</span>
+                        </div>
+
+                        <!-- MATHEMATICAL EXPLANATION -->
+                        <div class="math-steps-container">
+                            <h4>Décomposition du calcul (Niveau 1)</h4>
+                            <div class="math-equation">
+                                <div class="eq-row">
+                                    <span class="eq-term">A split:</span>
+                                    <span class="eq-val" id="ka-math-a-split">-</span>
+                                </div>
+                                <div class="eq-row">
+                                    <span class="eq-term">B split:</span>
+                                    <span class="eq-val" id="ka-math-b-split">-</span>
+                                </div>
+                                <hr class="eq-divider">
+                                <div class="eq-row">
+                                    <span class="eq-term">E₁ = A<sub>high</sub> × B<sub>high</sub>:</span>
+                                    <span class="eq-val font-fira" id="ka-math-e1">-</span>
+                                </div>
+                                <div class="eq-row">
+                                    <span class="eq-term">E₂ = A<sub>low</sub> × B<sub>low</sub>:</span>
+                                    <span class="eq-val font-fira" id="ka-math-e2">-</span>
+                                </div>
+                                <div class="eq-row">
+                                    <span class="eq-term">E₃ = (A<sub>high</sub>+A<sub>low</sub>) × (B<sub>high</sub>+B<sub>low</sub>):</span>
+                                    <span class="eq-val font-fira" id="ka-math-e3">-</span>
+                                </div>
+                                <div class="eq-row">
+                                    <span class="eq-term">E₄ = E₃ - E₁ - E₂:</span>
+                                    <span class="eq-val font-fira" id="ka-math-e4">-</span>
+                                </div>
+                                <hr class="eq-divider">
+                                <div class="eq-row eq-highlight">
+                                    <span class="eq-term">Résultat final:</span>
+                                    <span class="eq-val font-fira" id="ka-math-final">-</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="result-details">
+                            <div class="detail-row">
+                                <strong>Multiplication standard (A × B) :</strong>
+                                <code id="ka-std-res"></code>
+                            </div>
+                            <div class="detail-row">
+                                <strong>Algorithme Karatsuba :</strong>
+                                <code class="success-code" id="ka-res"></code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- FOOTER -->
+        <footer class="app-footer">
+            <p>Conçu avec ❤️ pour la visualisation d'algorithmes et de structures de données.</p>
+            <p class="copyright">&copy; 2026 - Kokoudev. Prêt pour déploiement Railway.</p>
+        </footer>
+    </div>
+
+    <!-- JS Scripts -->
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

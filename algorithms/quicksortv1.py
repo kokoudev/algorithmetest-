@@ -1,8 +1,4 @@
-print("bienvenue algorithme de quick sort")
-
-# Charger les données depuis un fichier texte
-with open("C:/Users/USER/Documents/cours/formation_train/trie.txt", "r") as f:
-    T = list(map(int, f.read().split()))
+# ---- ALGORITHME DE TRI QUICKSORT ----
 
 # Compteur global pour tracer le nombre de comparaisons effectuées
 comparaisons = 0
@@ -12,7 +8,6 @@ def mediane(arr):
     # Calcule l'index du pivot qui est la médiane entre premier, milieu et dernier élément
     n = len(arr)
     first_val = arr[0]  # Premier élément
-    # Pour taille paire 2k → index k-1, pour impaire → index n//2
     mid_index = (n - 1) // 2
     mid_val = arr[mid_index]  # Élément du milieu
     last_val = arr[n - 1]  # Dernier élément
@@ -65,17 +60,35 @@ def quicksort(arr, question):
     return quicksort(g, question) + [p] + quicksort(d, question)
 
 
-# ---- TEST Q1 : pivot = premier élément ----
-comparaisons = 0
-quicksort(T[:], 1)
-print("Q1 - Premier élément   :", comparaisons)
+# Exposer pour les tests
+def quicksort_v1(arr, question):
+    global comparaisons
+    comparaisons = 0
+    return quicksort(arr, question)
 
-# ---- TEST Q2 : pivot = dernier élément ----
-comparaisons = 0
-quicksort(T[:], 2)
-print("Q2 - Dernier élément   :", comparaisons)
 
-# ---- TEST Q3 : pivot = médiane des trois ----
-comparaisons = 0
-quicksort(T[:], 3)
-print("Q3 - Médiane des trois :", comparaisons)
+if __name__ == '__main__':
+    print("bienvenue algorithme de quick sort")
+    
+    # Charger les données depuis un fichier texte si possible
+    try:
+        with open("C:/Users/USER/Documents/cours/formation_train/trie.txt", "r") as f:
+            T = list(map(int, f.read().split()))
+    except FileNotFoundError:
+        print("trie.txt non trouvé, utilisation de données de test par défaut.")
+        T = [3, 1, 4, 1, 5, 9, 2, 6]
+        
+    # ---- TEST Q1 : pivot = premier élément ----
+    comparaisons = 0
+    quicksort(T[:], 1)
+    print("Q1 - Premier élément   :", comparaisons)
+    
+    # ---- TEST Q2 : pivot = dernier élément ----
+    comparaisons = 0
+    quicksort(T[:], 2)
+    print("Q2 - Dernier élément   :", comparaisons)
+    
+    # ---- TEST Q3 : pivot = médiane des trois ----
+    comparaisons = 0
+    quicksort(T[:], 3)
+    print("Q3 - Médiane des trois :", comparaisons)

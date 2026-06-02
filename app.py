@@ -2,17 +2,15 @@
 VISUALISEUR D'ALGORITHMES - BACKEND API
 ========================================
 API Flask pour exécuter 3 algorithmes fondamentaux
-
-Endpoints disponibles:
-- GET  / : Servir l'interface HTML
-- POST /api/quicksort : Exécuter QuickSort
-- POST /api/two-sum : Exécuter Two Sum
-- POST /api/karatsuba : Exécuter Karatsuba
 """
 
 import os
+import sys
 import bisect
-from flask import Flask, request, jsonify
+from flask import Flask, render_template, request, jsonify
+
+# Ajouter le dossier algorithms au path pour pouvoir importer
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'algorithms'))
 
 # ==================== CONFIGURATION ====================
 app = Flask(__name__)
@@ -23,13 +21,6 @@ def quicksort_algo(arr, strategy):
     """
     Tri rapide (QuickSort) avec 3 stratégies de pivot différentes
     Complexité : O(n log n) en moyenne
-    
-    Args:
-        arr (list): Tableau à trier
-        strategy (int): 1=premier, 2=dernier, 3=médiane
-    
-    Returns:
-        tuple: (tableau trié, nombre de comparaisons)
     """
     comparaisons = 0
     
@@ -51,28 +42,23 @@ def quicksort_algo(arr, strategy):
     def quicksort_helper(arr_inner, strat):
         nonlocal comparaisons
         
-        # Cas de base : tableau de 0 ou 1 élément
         if len(arr_inner) <= 1:
             return arr_inner
         
-        # Compter les comparaisons : m-1 pour m éléments
         comparaisons += len(arr_inner) - 1
         
-        # Choisir le pivot selon la stratégie
         if strat == 1:
-            pivot_index = 0  # Premier élément
+            pivot_index = 0
         elif strat == 2:
-            pivot_index = len(arr_inner) - 1  # Dernier élément
+            pivot_index = len(arr_inner) - 1
         else:
-            pivot_index = mediane(arr_inner)  # Médiane des trois
+            pivot_index = mediane(arr_inner)
         
-        # Placer le pivot en première position
         arr_inner[0], arr_inner[pivot_index] = arr_inner[pivot_index], arr_inner[0]
         p = arr_inner[0]
         
-        # Partitionner le tableau
-        g = []  # Gauche (< pivot)
-        d = []  # Droite (>= pivot)
+        g = []
+        d = []
         
         for x in arr_inner[1:]:
             if x < p:
@@ -80,7 +66,6 @@ def quicksort_algo(arr, strategy):
             else:
                 d.append(x)
         
-        # Récursion et combinaison
         return quicksort_helper(g, strat) + [p] + quicksort_helper(d, strat)
     
     result = quicksort_helper(arr[:], strategy)
@@ -91,30 +76,20 @@ def two_sum_algo(numbers):
     """
     Trouve toutes les paires de nombres dont la somme est entre -10000 et 10000
     Complexité : O(n log n) avec recherche binaire
-    
-    Args:
-        numbers (list): Tableau de nombres
-    
-    Returns:
-        tuple: (nombre de sommes distinctes, liste des sommes)
     """
     nums = sorted(list(set(numbers)))
     targets_found = set()
     
-    # Parcourir chaque nombre
     for x in nums:
-        # Intervalle de y tels que -10000 <= x + y <= 10000
         low = -10000 - x
         high = 10000 - x
         
-        # Recherche binaire pour trouver l'intervalle
         idx_start = bisect.bisect_left(nums, low)
         idx_end = bisect.bisect_right(nums, high)
         
-        # Ajouter toutes les sommes valides
         for i in range(idx_start, idx_end):
             y = nums[i]
-            if y != x:  # Éviter x + x avec le même nombre
+            if y != x:
                 targets_found.add(x + y)
     
     return len(targets_found), sorted(list(targets_found))
@@ -122,85 +97,44 @@ def two_sum_algo(numbers):
 # ==================== ALGORITHME 3 : KARATSUBA ====================
 def karatsuba_algo(a, b):
     """
-    Multiplication optimisée de deux grands nombres
-    Complexité : O(n^1.585) vs O(n²) pour multiplication naïve
-    
-    Utilise "Diviser pour régner" : réduit 4 multiplications à 3
-    
-    Args:
-        a (int): Premier nombre
-        b (int): Second nombre
-    
-    Returns:
-        int: Résultat de la multiplication
+    Multiplication optimisée de deux grands nombres (Karatsuba)
+    Complexité : O(n^1.585) vs O(n²)
     """
-    # Compter les chiffres du premier nombre
-    S1 = a
-    C1 = 0
-    while S1 != 0:
-        S1 = S1 // 10
-        C1 = C1 + 1
+    if a < 10 or b < 10:
+        return a * b
     
-    # Compter les chiffres du second nombre
-    S2 = b
-    C2 = 0
-    while S2 != 0:
-        S2 = S2 // 10
-        C2 = C2 + 1
+    m = max(len(str(a)), len(str(b))) // 2
     
-    # Diviser en deux parties
-    mc1 = C1 // 2
-    mc2 = C2 // 2
+    high_a, low_a = divmod(a, 10**m)
+    high_b, low_b = divmod(b, 10**m)
     
-    D1 = 10 ** mc1
-    D2 = 10 ** mc2
+    z0 = karatsuba_algo(low_a, low_b)
+    z2 = karatsuba_algo(high_a, high_b)
+    z1 = karatsuba_algo(low_a + high_a, low_b + high_b)
     
-    # Décomposition : a = A * 10^mc1 + B, b = C * 10^mc2 + D
-    A = a // D1
-    B = a % D1
-    C = b // D2
-    D = b % D2
-    
-    # Trois multiplications au lieu de quatre
-    E1 = A * C           # Partie haute × haute
-    E2 = B * D           # Partie basse × basse
-    E3 = (A + B) * (C + D)  # Sommes × sommes
-    E4 = E3 - E1 - E2    # Produit croisé
-    
-    # Combinaison finale
-    R = E1 * 10 ** (2 * mc1) + E4 * 10 ** mc1 + E2
-    
-    return R
+    return z2 * 10**(2*m) + (z1 - z2 - z0) * 10**m + z0
 
-# ==================== ROUTES API ====================
+# ==================== ROUTES ====================
 
 @app.route('/')
 def index():
     """Servir l'interface HTML"""
-    try:
-        with open('index.html', 'r', encoding='utf-8') as f:
-            return f.read()
-    except FileNotFoundError:
-        return "Erreur : index.html non trouvé", 404
+    return render_template('index.html')
 
 @app.route('/api/quicksort', methods=['POST'])
 def api_quicksort():
-    """API : Exécuter QuickSort"""
+    """API QuickSort"""
     try:
         data = request.json
         numbers = list(map(int, data['numbers'].split()))
         strategy = int(data['strategy'])
         
         if strategy not in [1, 2, 3]:
-            return jsonify({'success': False, 'error': 'Stratégie invalide (1, 2 ou 3)'}), 400
+            return jsonify({'success': False, 'error': 'Stratégie invalide'}), 400
         
         result, comparaisons = quicksort_algo(numbers, strategy)
         
-        strategy_names = {
-            1: "Premier élément",
-            2: "Dernier élément",
-            3: "Médiane des trois"
-        }
+        strategy_names = {1: "Premier élément", 2: "Dernier élément", 3: "Médiane des trois"}
         
         return jsonify({
             'success': True,
@@ -209,14 +143,14 @@ def api_quicksort():
             'strategy': strategy_names[strategy],
             'original_count': len(numbers)
         })
-    except ValueError as e:
+    except ValueError:
         return jsonify({'success': False, 'error': 'Format des nombres invalide'}), 400
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 400
 
 @app.route('/api/two-sum', methods=['POST'])
 def api_two_sum():
-    """API : Exécuter Two Sum"""
+    """API Two Sum"""
     try:
         data = request.json
         numbers = list(map(int, data['numbers'].split()))
@@ -226,7 +160,7 @@ def api_two_sum():
         return jsonify({
             'success': True,
             'count': count,
-            'sums': sums[:100],  # Limiter à 100 pour la réponse
+            'sums': sums[:100],  # Limiter les 100 premières sommes distinctes
             'total_sums': len(sums),
             'input_count': len(numbers)
         })
@@ -237,7 +171,7 @@ def api_two_sum():
 
 @app.route('/api/karatsuba', methods=['POST'])
 def api_karatsuba():
-    """API : Exécuter Karatsuba"""
+    """API Karatsuba"""
     try:
         data = request.json
         a = int(data['a'])
@@ -262,18 +196,14 @@ def api_karatsuba():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 400
 
-# ==================== HEALTH CHECK ====================
-
 @app.route('/api/health', methods=['GET'])
 def health():
-    """Vérifier que l'API fonctionne"""
+    """Health check"""
     return jsonify({
         'status': 'ok',
         'message': 'API Visualiseur d\'Algorithmes active',
         'version': '1.0'
     })
-
-# ==================== ERROR HANDLERS ====================
 
 @app.errorhandler(404)
 def not_found(error):
@@ -281,7 +211,7 @@ def not_found(error):
 
 @app.errorhandler(500)
 def server_error(error):
-    return jsonify({'success': False, 'error': 'Erreur serveur'}), 500
+    return jsonify({'success': False, 'error': 'Erreur interne du serveur'}), 500
 
 # ==================== MAIN ====================
 
@@ -302,4 +232,3 @@ if __name__ == '__main__':
         port=port,
         use_reloader=debug_mode
     )
-

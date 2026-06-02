@@ -1,47 +1,35 @@
-print("karasuba solo - Multiplication de deux grands nombres")
+# ---- MULTIPLICATION DE DEUX GRANDS NOMBRES (KARATSUBA) ----
 
-# Lire les deux nombres à multiplier
-a = int(input("entrer un premier nombre : "))
-b = int(input("entrer un second nombre : "))
+def karatsuba(a, b):
+    """
+    Algorithme de multiplication de Karatsuba
+    Complexité temporelle : O(n^1.585)
+    """
+    # Cas de base pour les chiffres uniques
+    if a < 10 or b < 10:
+        return a * b
+        
+    # Calculer la taille des nombres
+    m = max(len(str(a)), len(str(b))) // 2
+    
+    # Séparer les nombres en parties haute et basse
+    high_a, low_a = divmod(a, 10**m)
+    high_b, low_b = divmod(b, 10**m)
+    
+    # 3 multiplications de Karatsuba
+    z0 = karatsuba(low_a, low_b)
+    z2 = karatsuba(high_a, high_b)
+    z1 = karatsuba(low_a + high_a, low_b + high_b)
+    
+    # Combinaison des résultats
+    return z2 * 10**(2*m) + (z1 - z2 - z0) * 10**m + z0
 
-# Variables temporaires pour ne pas perdre les valeurs initiales
-S1 = a
-S2 = b
-
-# Compter le nombre de chiffres du premier nombre
-C1 = 0
-while S1 != 0:
-    S1 = S1 // 10
-    C1 = C1 + 1
-
-# Compter le nombre de chiffres du second nombre
-while S2 != 0:
-    S2 = S2 // 10
-    C2 = C2 + 1
-
-# Calculer la moitié du nombre de chiffres pour chaque nombre
-mc1 = C1 // 2
-mc2 = C2 // 2
-
-# Créer le diviseur pour séparer en deux parties (puissance de 10)
-D1 = 10 ** mc1
-D2 = 10 ** mc2
-
-# Décomposer le premier nombre : a = A * 10^mc1 + B
-A = a // D1  # Partie haute
-B = a % D1   # Partie basse
-
-# Décomposer le second nombre : b = C * 10^mc2 + D
-C = b // D2  # Partie haute
-D = b % D2   # Partie basse
-
-# Calcul de l'algorithme Karatsuba avec 3 multiplications au lieu de 4
-E1 = A * C        # Multiplication des parties hautes
-E2 = B * D        # Multiplication des parties basses
-E3 = (A + B) * (C + D)  # Multiplication des sommes
-E4 = E3 - E1 - E2  # Partie centrale (produit croisé)
-
-# Combinaison finale : (A*C)*10^(2*mc1) + (E4)*10^mc1 + (B*D)
-R = E1 * 10 ** (2 * mc1) + E4 * 10 ** mc1 + E2
-
-print("le resultat de la multiplication est : ", R)
+if __name__ == '__main__':
+    print("karasuba solo - Multiplication de deux grands nombres")
+    try:
+        a = int(input("entrer un premier nombre : "))
+        b = int(input("entrer un second nombre : "))
+        R = karatsuba(a, b)
+        print("le resultat de la multiplication est : ", R)
+    except ValueError:
+        print("Veuillez entrer des nombres entiers valides.")
